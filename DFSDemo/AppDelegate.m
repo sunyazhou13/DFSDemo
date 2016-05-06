@@ -1,11 +1,3 @@
-//
-//  AppDelegate.m
-//  DFSDemo
-//
-//  Created by sunyazhou on 16/5/3.
-//  Copyright © 2016年 Baidu, Inc. All rights reserved.
-//
-
 #import "AppDelegate.h"
 
 
@@ -74,12 +66,11 @@
                 
                 //是否为文件夹
                 if ([isDirectory boolValue]) {
-                    NSDirectoryEnumerator *dirEnumerator = [self enumeratorPathByFileManager:fileManager atURL:url propertiesForKeys:keys options:NSDirectoryEnumerationSkipsSubdirectoryDescendants];
+                    NSDirectoryEnumerator *dirEnumerator = [self enumeratorPathByFileManager:fileManager atURL:url propertiesForKeys:@[NSURLIsDirectoryKey] options:NSDirectoryEnumerationSkipsSubdirectoryDescendants];
                     if (dirEnumerator.allObjects.count > 0) {
                         NSLog(@"文件夹内有文件,忽略此条路径 %@",[url path]);
                     } else {
                         [urlDirFiles addObject:[url path]];
-                        
                     }
                 } else {
                     [urlDirFiles addObject:[url path]];
@@ -87,7 +78,7 @@
             }
             NSLog(@"所有可上传文件列表:\n%@",urlDirFiles);
         }
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
             NSLog(@"\n文件数量:%zd\n耗时:%.2f 秒",urlDirFiles.count,(nowTime - currentTime));
@@ -112,6 +103,5 @@
                                          }];
     return enumerator;
 }
-
 
 @end
