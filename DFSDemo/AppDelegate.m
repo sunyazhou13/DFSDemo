@@ -42,9 +42,6 @@
         if (urls.count == 0) { return; }
         
         NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-        
-        
-        
         //深度遍历
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSMutableArray *urlDirFiles = [[NSMutableArray alloc] initWithCapacity:0];
@@ -57,20 +54,29 @@
             for (NSURL *url in enumerator) {
                 NSError *error;
                 NSNumber *isDirectory = nil;
-                if (! [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&error]) {
+                if (![url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&error]) {
                     // handle error
-                }
-                else if (! [isDirectory boolValue]) {
-                    // No error and it’s not a directory; do something with the file
                 }
                 
                 //是否为文件夹
                 if ([isDirectory boolValue]) {
-                    NSDirectoryEnumerator *dirEnumerator = [self enumeratorPathByFileManager:fileManager atURL:url propertiesForKeys:@[NSURLIsDirectoryKey] options:NSDirectoryEnumerationSkipsSubdirectoryDescendants];
-                    if (dirEnumerator.allObjects.count > 0) {
+                    //方案1
+//                    NSDirectoryEnumerator *dirEnumerator = [self enumeratorPathByFileManager:fileManager atURL:url propertiesForKeys:@[NSURLIsDirectoryKey] options:NSDirectoryEnumerationSkipsSubdirectoryDescendants];
+//                    if (dirEnumerator.allObjects.count > 0) {
+//                        NSLog(@"文件夹内有文件,忽略此条路径 %@",[url path]);
+//                    } else {
+//                        [urlDirFiles addObject:[url path]];
+//                    }
+                    
+                    //方案2
+                    NSError *error = nil;
+                    NSArray *listOfFiles = [fileManager contentsOfDirectoryAtPath:[url path] error:nil];
+                    if (listOfFiles != nil && listOfFiles.count == 0) {
+                        [urlDirFiles addObject:[url path]];
+                    } else if (error == nil){
                         NSLog(@"文件夹内有文件,忽略此条路径 %@",[url path]);
                     } else {
-                        [urlDirFiles addObject:[url path]];
+                        NSLog(@"文件遍历该层出错:%@",error);
                     }
                 } else {
                     [urlDirFiles addObject:[url path]];
@@ -78,10 +84,11 @@
             }
             NSLog(@"所有可上传文件列表:\n%@",urlDirFiles);
         }
+        NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
+        NSLog(@"\n文件数量:%zd\n耗时:%.2f 秒",urlDirFiles.count,(nowTime - currentTime));
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
-            NSLog(@"\n文件数量:%zd\n耗时:%.2f 秒",urlDirFiles.count,(nowTime - currentTime));
+            NSLog(@"scan end");
         });
     });
 }
